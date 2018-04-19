@@ -3,30 +3,20 @@ package com.example.lzy01.loadimg;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.media.ExifInterface;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
-import android.os.StrictMode;
 import android.provider.MediaStore;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOError;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
@@ -35,28 +25,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public  File  PICTURE_FILE;
     private static final int PHOTO_REQUEST=1;
     private static final int FILE_REQUEST=2;
-    private ImageButton photo;
-    private ImageButton file;
-    private ImageButton back;
+    private ImageButton btnToPhoto;
+    private ImageButton btnToFile;
+    private ImageButton btnToFirstView;
     private ImageView imageView;
+    private boolean firstView=true;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        photo=findViewById(R.id.openPhoto);
-        file=findViewById(R.id.openFile);
-        back=findViewById(R.id.back);
+        Init();
+    }
+
+/*
+* *********初始化按钮组件，设置Onclick***********
+* */
+    private void Init() {
+        btnToPhoto =findViewById(R.id.openPhoto);
+        btnToFile =findViewById(R.id.openFile);
+        btnToFirstView =findViewById(R.id.back);
         imageView=findViewById(R.id.showImg);
-        imageView.setVisibility(View.INVISIBLE);
-        back.setVisibility(View.INVISIBLE);
-        photo.setOnClickListener(this);
-        file.setOnClickListener(this);
-        back.setOnClickListener(this);
+        ControlView();
+        btnToPhoto.setOnClickListener(this);
+        btnToFile.setOnClickListener(this);
+        btnToFirstView.setOnClickListener(this);
+    }
+
+/*
+* **********控件的显示控制**********************
+* */
+    public void ControlView(){
+        if(firstView) {
+            btnToPhoto.setVisibility(View.VISIBLE);
+            btnToFile.setVisibility(View.VISIBLE);
+            imageView.setVisibility(View.INVISIBLE);
+            btnToFirstView.setVisibility(View.INVISIBLE);
+        }else {
+            btnToPhoto.setVisibility(View.INVISIBLE);
+            btnToFile.setVisibility(View.INVISIBLE);
+            imageView.setVisibility(View.VISIBLE);
+            btnToFirstView.setVisibility(View.VISIBLE);
+        }
     }
 
 
+
+/*
+* **********Onclick实现************************
+* */
     @Override
     public void onClick(View view){
         switch (view.getId()){
@@ -71,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
                 startActivityForResult(intent, PHOTO_REQUEST);//takePhotoRequestCode是自己定义的一个请求码
-                System.out.println("点击");
+                System.out.println("点击"+PICTURE_FILE.toString());
                 break;
             case R.id.openFile:
                 Intent intent2 = new Intent(Intent.ACTION_GET_CONTENT);
@@ -81,10 +99,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 startActivityForResult(intent2,FILE_REQUEST);
                 break;
             case R.id.back:
-                photo.setVisibility(View.VISIBLE);
-                file.setVisibility(View.VISIBLE);
+                btnToPhoto.setVisibility(View.VISIBLE);
+                btnToFile.setVisibility(View.VISIBLE);
                 imageView.setVisibility(View.INVISIBLE);
-                back.setVisibility(View.INVISIBLE);
+                btnToFirstView.setVisibility(View.INVISIBLE);
                 break;
         }
     }
@@ -95,10 +113,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
         Bitmap bitmap;
         if(resultCode == RESULT_OK) {
-            photo.setVisibility(View.INVISIBLE);
-            file.setVisibility(View.INVISIBLE);
-            imageView.setVisibility(View.VISIBLE);
-            back.setVisibility(View.VISIBLE);
+            firstView=false;
+            ControlView();
             switch (requestCode) {
                 case PHOTO_REQUEST:
                     //Toast.makeText(getApplicationContext(),"保存成功",Toast.LENGTH_SHORT).show();
@@ -134,14 +150,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
             }
         }else{
-            photo.setVisibility(View.VISIBLE);
-            file.setVisibility(View.VISIBLE);
-            imageView.setVisibility(View.INVISIBLE);
-            back.setVisibility(View.INVISIBLE);
+            firstView=true;
+            ControlView();
         }
     }
 
-
+/*
+* **********从文件中载入图像**********************
+* */
     public Bitmap loadBitmap(String imgpath) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         Bitmap bm = null;
@@ -166,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //举个例子：当 inSampleSize == 4 时会返回一个尺寸(长和宽)是原始尺寸1/4，像素是原来1/16的图片，由此来减少内存使用
 
             //options.inSampleSize = ratio;由动态的生成此数值变为手动控制
-            options.inSampleSize = 4;//此数值决定显示时照片的大小
+            options.inSampleSize = 1;//此数值决定显示时照片的大小
             options.inJustDecodeBounds = false;
         }
 
