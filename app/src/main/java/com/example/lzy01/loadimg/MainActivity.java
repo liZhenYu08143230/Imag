@@ -1,10 +1,13 @@
 package com.example.lzy01.loadimg;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -79,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view){
         switch (view.getId()){
             case R.id.openPhoto:
-                String path = Environment.getExternalStorageDirectory() + File.separator+"Pictures"+ File.separator +"images"; //获取路径
+                String path = Environment.getExternalStorageDirectory() + File.separator +"images"; //获取路径
                 String fileName = new Date().getTime()+".jpg";//定义文件名
                 PICTURE_FILE = new File(path,fileName);
                 if(!PICTURE_FILE.getParentFile().exists()){//文件夹不存在
